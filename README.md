@@ -38,6 +38,29 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install-junctions.ps1
 
 开发时使用 Junction，发布时使用 GitHub Release 或 `npx skills add` 安装固定版本。不要把本机整个 `.codex\skills` 目录提交到仓库。
 
+## PowerShell / GitHub 网络配置
+
+如果浏览器通过 Clash 等 VPN 客户端访问 GitHub，而 Git 或 `npx` 不能访问，可以使用仓库中的脚本把代理配置到当前 PowerShell、Git 和 npm：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\configure-github-network.ps1 -Persist
+```
+
+脚本默认使用 `http://127.0.0.1:7890`。如果 VPN 使用其他端口，传入实际地址：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\configure-github-network.ps1 `
+  -Proxy http://127.0.0.1:7890 -Persist
+```
+
+清除脚本写入的用户级代理配置：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\configure-github-network.ps1 -Clear
+```
+
+脚本只配置代理，不保存 GitHub 令牌或账号密码。
+
 ## 本地私有配置
 
 创建以下文件：
