@@ -1,0 +1,4 @@
+interface:
+  display_name: "出差申请"
+  short_description: "整理计划、路线、预算和审批材料"
+  default_prompt: "使用 $travel-application 整理这次出差申请，并保留待补充字段。"

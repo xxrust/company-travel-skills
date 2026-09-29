@@ -1,0 +1,4 @@
+interface:
+  display_name: "差旅全流程"
+  short_description: "管理申请、日报、收尾和报销"
+  default_prompt: "使用 $business-travel-workflow 创建或更新这次出差案件，并按当前阶段继续处理。"

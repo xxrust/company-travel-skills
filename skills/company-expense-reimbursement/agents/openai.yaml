@@ -1,0 +1,4 @@
+interface:
+  display_name: "公司差旅报销"
+  short_description: "解析发票并生成可校验的差旅报销表"
+  default_prompt: "使用 $company-expense-reimbursement 解析这些发票并生成一份新的公司差旅报销表。"

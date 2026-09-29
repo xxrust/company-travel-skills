@@ -1,0 +1,22 @@
+# Python and editor output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.idea/
+.vscode/
+
+# Local case data and generated evidence
+cases/
+extracted/
+private/
+TRIP-*/
+报销单_*.xlsx
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# Local test output
+.tmp/
+_skill_test_case/

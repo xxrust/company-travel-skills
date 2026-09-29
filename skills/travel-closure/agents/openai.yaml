@@ -1,0 +1,4 @@
+interface:
+  display_name: "出差收尾"
+  short_description: "核对实际路线、成果和报销前置条件"
+  default_prompt: "使用 $travel-closure 检查这次出差是否可以收尾并指出所有未解决问题。"

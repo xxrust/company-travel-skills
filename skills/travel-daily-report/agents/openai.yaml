@@ -1,0 +1,4 @@
+interface:
+  display_name: "出差每日汇报"
+  short_description: "记录每日位置、工作成果和异常"
+  default_prompt: "使用 $travel-daily-report 写今天的出差每日汇报，并登记待补充信息。"
