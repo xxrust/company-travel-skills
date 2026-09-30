@@ -98,6 +98,26 @@ python .\skills\company-expense-reimbursement\scripts\new_workbook.py `
   --output .\cases\TRIP-2026-001\05-报销\差旅费报销单.xlsx
 ```
 
+使用本地个人资料快速生成公司出差申请单：
+
+```powershell
+python .\skills\travel-application\scripts\new_application.py `
+  --case-dir .\cases\TRIP-2026-001 `
+  --start 2026-09-28 --end 2026-09-30 `
+  --destination "宁波 TXC P4" `
+  --purpose "在TXC P4安装4台点胶设备并进行现场调试"
+```
+
+打印发票前，先生成带日期和连续页码的打印包：
+
+```powershell
+python .\skills\company-expense-reimbursement\scripts\print_packet.py --list-printers
+python .\skills\company-expense-reimbursement\scripts\print_packet.py .\invoice.pdf `
+  --kind vat --output .\cases\TRIP-2026-001\03-发票凭证\打印包.pdf
+```
+
+住宿标准和查询记录使用 `hotel_benchmark.py`；规则是最近的汉庭，附近没有汉庭时使用最近的全季。价格必须按入住日期人工核验并保存来源。
+
 ## 依赖
 
 处理 PDF 时需要单独安装或启用 `$mineru-pdf-to-md`。这个仓库只负责差旅业务流程，不复制外部 MinerU Skill 或模型文件。

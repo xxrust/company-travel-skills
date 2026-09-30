@@ -17,6 +17,20 @@ Read [references/application-fields.md](references/application-fields.md) before
 4. Produce the requested document format. Preserve the company form when supplied; otherwise use the fallback template. Save the working copy under `01-出差申请/`. Never overwrite the reusable template with a filled application.
 5. Record the artifact in `case.yaml.documents` and add an event. Set the case to `applied` only when the user confirms that the application was submitted. Set `approved` only with an approval source or explicit user confirmation.
 
+## 快速生成
+
+Use `scripts/new_application.py` to fill the company form without asking the agent to edit table cells one by one. The script reads `C:\Users\<user>\.codex\private\user-profile.yaml` by default and can update an existing case when `--case-dir` is provided:
+
+```powershell
+python scripts/new_application.py `
+  --case-dir "path\to\TRIP-YYYY-001" `
+  --start 2026-09-28 --end 2026-09-30 `
+  --destination "宁波 TXC P4" `
+  --purpose "在TXC P4安装4台点胶设备并进行现场调试"
+```
+
+The script fills both printable copies in the company form, preserves blank approval/signature cells, refuses to overwrite an existing output file, and does not mark the application as submitted unless `--submitted` is explicitly supplied.
+
 ## Boundaries
 
 - Do not submit an approval request, send email, or sign on the user's behalf unless a separate explicit authorization and tool route exists.

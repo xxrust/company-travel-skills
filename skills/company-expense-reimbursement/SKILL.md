@@ -13,7 +13,7 @@ When invoked from `business-travel-workflow`, load the case's `case.yaml` first.
 
 ## Required workflow
 
-1. Read [references/company-policy.md](references/company-policy.md) and [references/local-profile.md](references/local-profile.md) before validating invoice fields or travel rules. Company and traveler identity data must come from the local profile, never from this public repository.
+1. Read [references/company-policy.md](references/company-policy.md), [references/local-profile.md](references/local-profile.md), [references/hotel-standard.md](references/hotel-standard.md), and [references/mail-ingest.md](references/mail-ingest.md) before validating invoice fields or travel rules. Company and traveler identity data must come from the local profile, never from this public repository.
 2. For every supplied PDF or page image, run the local MinerU workflow from `$mineru-pdf-to-md` first. Preserve the source filename and page number. Do not silently replace MinerU with a generic OCR/text extractor. If the local model is unavailable, report the blocker.
    If MinerU's Markdown has obvious character corruption or misses a field, use the PDF's embedded text layer only as a cross-check, keep the MinerU artifact, and mark the affected field as `需人工复核` when the two sources disagree.
 3. Create a new workbook. The script copies the blank public template when no local profile is found, and generates a locally populated copy when a profile is found:
@@ -36,6 +36,25 @@ When invoked from `business-travel-workflow`, load the case's `case.yaml` first.
 - If travel from A to B happened on a date and the employee stayed in B for consecutive days, put the lodging amount on the same A→B row. If B has multiple hotel invoices, add rows from top to bottom in date order and keep each source index visible.
 - Check the route as a sequence. The last destination must return to the initial origin. If the evidence does not form a closed loop, issue `路线未闭环` and show the missing or unmatched leg. Do not manufacture a return leg.
 - Leave all signature cells blank. The reimbursement form is intentionally unsigned; the traveler and reviewers sign by hand after printing.
+
+## 打印规则
+
+- 增值税发票（住宿为主）、火车票和机票默认打印 2 份。
+- 其他单据默认打印 1 份。
+- 使用 `scripts/print_packet.py` 生成打印包；它按输入文件顺序合并单据，在每页右下角写入日期和连续页码，并生成同名 JSON 来源索引。
+- `--list-printers` 可列出本机打印机；`--printer` 配合 `--print` 使用 Windows `printto` 发送到指定打印机。
+
+```powershell
+python scripts/print_packet.py .\invoice-a.pdf .\invoice-b.pdf `
+  --kind vat `
+  --output .\cases\TRIP-YYYY-001\03-发票凭证\打印包.pdf `
+  --trip-date 2026-09-30
+
+python scripts/print_packet.py --list-printers
+python scripts/print_packet.py .\打印包.pdf --kind other --copies 1 `
+  --output .\cases\TRIP-YYYY-001\03-发票凭证\打印包-带页码.pdf `
+  --printer "打印机名称" --print
+```
 
 ## Output requirements
 
