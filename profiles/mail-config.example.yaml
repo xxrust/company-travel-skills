@@ -1,0 +1,30 @@
+# Copy this file to:
+# C:\Users\<user>\.codex\private\mail-config.yaml
+#
+# Keep passwords, OAuth client files, and OAuth token files outside this
+# repository.  The example below shows both supported read-only providers;
+# use exactly one provider in the local file.
+
+# provider: gmail
+# gmail:
+#   # Download this JSON from Google Cloud OAuth client credentials.
+#   credentials_json: C:\Users\<user>\.codex\private\google-oauth-client.json
+#   token_json: C:\Users\<user>\.codex\private\gmail-token.json
+#   account: name@example.com
+#   # Optional Gmail search label/query.  Date filters are added by the CLI.
+#   folder: in:anywhere
+#   query: has:attachment
+
+provider: imap
+account: name@company.example
+imap:
+  # NetEase enterprise mail host must be confirmed from the company's mail
+  # administration page.  Do not guess a host when the server rejects login.
+  host: imap.qiye.163.com
+  port: 993
+  ssl: true
+  username: name@company.example
+  # Prefer an environment variable or a file containing an app password.
+  password_env: COMPANY_MAIL_PASSWORD
+  # password_file: C:\Users\<user>\.codex\private\company-mail-password.txt
+  folder: INBOX

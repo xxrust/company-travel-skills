@@ -85,6 +85,20 @@ C:\Users\<user>\.codex\private\user-profile.yaml
 python .\scripts\validate_skills.py
 ```
 
+## 邮箱发票采集
+
+报销 Skill 支持只读扫描 Gmail 或网易企业邮箱，下载疑似发票/行程单附件，并用邮件 ID、附件 ID 和 SHA-256 去重。配置文件和凭据必须放在 `C:\Users\<user>\.codex\private`，示例见 `profiles/mail-config.example.yaml`，详细流程见 `skills/company-expense-reimbursement/references/mail-ingest.md`。
+
+首次接入先执行候选预览：
+
+```powershell
+python .\skills\company-expense-reimbursement\scripts\mail_ingest.py `
+  --config "$env:USERPROFILE\.codex\private\mail-config.yaml" `
+  --since 2026-09-01 --dry-run
+```
+
+确认后再下载到当前差旅案件的发票目录。采集器只读邮箱，不标记已读、不移动、不删除、不发送邮件；下载后仍需交给 `$mineru-pdf-to-md` 并完成发票字段和路线校验。
+
 生成空白报销模板：
 
 ```powershell

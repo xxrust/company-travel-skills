@@ -7,13 +7,14 @@ description: "Create and validate company travel reimbursement workbooks from in
 
 Use this skill when the user sends an invoice PDF, an invoice address/link, an invoice scan/photo, or asks to prepare or check a company travel reimbursement. The deliverable is a copied Excel workbook plus a concise validation report.
 
-If an invoice address is a directly downloadable PDF or image, save a local copy in the current case folder and process it like an uploaded file. If it requires a login or cannot be fetched, ask the user to upload the document instead of guessing from the URL.
+If an invoice address is a directly downloadable PDF or image, save a local copy in the current case folder and process it like an uploaded file. If it requires a login or cannot be fetched, ask the user to upload the document instead of guessing from the URL. When the user asks to scan Gmail or NetEase enterprise mail, read [references/mail-ingest.md](references/mail-ingest.md) and use the read-only connector or `scripts/mail_ingest.py`; never ask the skill to send, delete, move, or mark mail as read.
 
 When invoked from `business-travel-workflow`, load the case's `case.yaml` first. Link each invoice or travel document to a `case_id` and, when possible, a specific `leg_id` or lodging stay. Do not change planned or actual route fields from invoice text alone; return route/date conflicts to the workflow as open issues.
 
 ## Required workflow
 
 1. Read [references/company-policy.md](references/company-policy.md), [references/local-profile.md](references/local-profile.md), [references/hotel-standard.md](references/hotel-standard.md), and [references/mail-ingest.md](references/mail-ingest.md) before validating invoice fields or travel rules. Company and traveler identity data must come from the local profile, never from this public repository.
+   If mailbox collection is requested, first run a dry run or list operation, show the candidate message and attachment count, then download only supported invoice/travel document attachments. Keep `mail-index.json` with the downloaded files and pass each PDF/image to `$mineru-pdf-to-md`.
 2. For every supplied PDF or page image, run the local MinerU workflow from `$mineru-pdf-to-md` first. Preserve the source filename and page number. Do not silently replace MinerU with a generic OCR/text extractor. If the local model is unavailable, report the blocker.
    If MinerU's Markdown has obvious character corruption or misses a field, use the PDF's embedded text layer only as a cross-check, keep the MinerU artifact, and mark the affected field as `需人工复核` when the two sources disagree.
 3. Create a new workbook. The script copies the blank public template when no local profile is found, and generates a locally populated copy when a profile is found:
