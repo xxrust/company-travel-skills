@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import ctypes
 import email
 import getpass
 import hashlib
@@ -503,6 +504,11 @@ def read_secret(section: dict[str, Any], key: str, default_env: str) -> str:
         path = expand_path(password_file)
         if path.exists():
             return path.read_text(encoding="utf-8").strip()
+    credential_target = section.get("password_credential_target")
+    if credential_target:
+        value = read_windows_credential(str(credential_target))
+        if value:
+            return value
     plain = section.get(key)
     if plain:
         return str(plain)
@@ -514,6 +520,48 @@ def read_secret(section: dict[str, Any], key: str, default_env: str) -> str:
         f"缺少邮箱密码。优先在交互式终端输入，或设置环境变量 {env_name}，"
         f"或在本地配置中使用 {key}_file；不要把密码提交到 GitHub。"
     )
+
+
+def read_windows_credential(target: str) -> str | None:
+    """Read a Generic Windows Credential into memory without printing it."""
+    if os.name != "nt":
+        return None
+
+    class Credential(ctypes.Structure):
+        _fields_ = [
+            ("Flags", ctypes.c_uint32),
+            ("Type", ctypes.c_uint32),
+            ("TargetName", ctypes.c_wchar_p),
+            ("Comment", ctypes.c_wchar_p),
+            ("LastWritten", ctypes.c_byte * 8),
+            ("CredentialBlobSize", ctypes.c_uint32),
+            ("CredentialBlob", ctypes.c_void_p),
+            ("Persist", ctypes.c_uint32),
+            ("AttributeCount", ctypes.c_uint32),
+            ("Attributes", ctypes.c_void_p),
+            ("TargetAlias", ctypes.c_wchar_p),
+            ("UserName", ctypes.c_wchar_p),
+        ]
+
+    advapi32 = ctypes.windll.advapi32
+    kernel32 = ctypes.windll.kernel32
+    advapi32.CredReadW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.POINTER(Credential))]
+    advapi32.CredReadW.restype = ctypes.c_bool
+    advapi32.CredFree.argtypes = [ctypes.c_void_p]
+    advapi32.CredFree.restype = None
+    credential_ptr = ctypes.POINTER(Credential)()
+    # CRED_TYPE_GENERIC = 1; authentication failures fall through to the
+    # normal hidden prompt so an existing mailbox workflow remains usable.
+    if not advapi32.CredReadW(target, 1, 0, ctypes.byref(credential_ptr)):
+        return None
+    try:
+        credential = credential_ptr.contents
+        if not credential.CredentialBlob or not credential.CredentialBlobSize:
+            return None
+        raw = ctypes.string_at(credential.CredentialBlob, credential.CredentialBlobSize)
+        return raw.decode("utf-16-le", errors="strict").rstrip("\x00")
+    finally:
+        advapi32.CredFree(credential_ptr)
 
 
 def load_config(path: Path) -> dict[str, Any]:

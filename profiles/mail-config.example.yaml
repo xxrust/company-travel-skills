@@ -28,4 +28,6 @@ imap:
   # If both are omitted, the interactive command prompts without echoing it.
   password_env: COMPANY_MAIL_PASSWORD
   # password_file: C:\Users\<user>\.codex\private\company-mail-password.txt
+  # Or use a Generic Windows Credential with this target:
+  # password_credential_target: company-expense-reimbursement:liangyh@posenele.com
   folder: INBOX
