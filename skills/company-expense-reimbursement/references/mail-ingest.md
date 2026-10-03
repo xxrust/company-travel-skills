@@ -78,6 +78,19 @@ python skills\company-expense-reimbursement\scripts\mail_ingest.py `
   --since 2026-09-01 --dry-run
 ```
 
+如果配置文件还是示例值，脚本会在交互式终端中询问完整邮箱地址和 IMAP 服务器地址。也可以显式传入并保存非敏感设置：
+
+```powershell
+python skills\company-expense-reimbursement\scripts\mail_ingest.py `
+  --provider imap `
+  --config "$env:USERPROFILE\.codex\private\mail-config.yaml" `
+  --email "你的企业邮箱地址" `
+  --imap-host "企业邮箱后台显示的 IMAP 服务器" `
+  --save-mail-settings --setup --dry-run
+```
+
+`--save-mail-settings` 只保存邮箱地址和 IMAP 服务器，不保存密码。邮箱域名和 IMAP 主机是两个独立设置，不能从一个值可靠推导另一个值。
+
 采集器默认只下载 PDF、PNG、JPG、JPEG 和 OFD，并用邮件主题、发件人、正文和附件名判断是否像发票或交通凭证。需要把所有支持格式的附件交给人工筛选时，使用 `--include-all-attachments`。
 
 ## 去重与来源追踪

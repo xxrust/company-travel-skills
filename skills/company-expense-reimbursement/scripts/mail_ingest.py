@@ -527,6 +527,48 @@ def load_config(path: Path) -> dict[str, Any]:
     return data
 
 
+def is_placeholder(value: Any) -> bool:
+    text = str(value or "").strip().lower()
+    return not text or "example" in text or "your-" in text or text in {"name@company.example", "name@company.com"}
+
+
+def configure_imap_settings(config: dict[str, Any], args: argparse.Namespace, config_path: Path) -> None:
+    """Collect non-secret IMAP settings on first use; never save a password."""
+    provider_name = str(args.provider or config.get("provider") or "").lower()
+    if provider_name not in {"imap", "netease", "netease-imap", "gmail-imap"}:
+        return
+    section = config.setdefault("imap", {})
+    account = str(config.get("account") or section.get("username") or "").strip()
+    host = str(section.get("host") or "").strip()
+    needs_setup = bool(args.setup or args.email or args.imap_host or is_placeholder(account) or is_placeholder(host))
+    if not needs_setup:
+        return
+    if not sys.stdin.isatty() and (is_placeholder(account) or is_placeholder(host)) and not (args.email and args.imap_host):
+        raise ValueError(
+            "邮箱配置仍是示例值。请在交互式终端运行，或传入 --email 和 --imap-host。"
+        )
+    if args.email:
+        account = args.email.strip()
+    elif is_placeholder(account):
+        account = input("请输入完整企业邮箱地址（例如 name@your-company.com）：").strip()
+    if "@" not in account or account.endswith("@"):
+        raise ValueError("邮箱地址格式不完整，请输入完整的企业邮箱地址")
+    if args.imap_host:
+        host = args.imap_host.strip()
+    elif args.setup or is_placeholder(host):
+        default_host = host if not is_placeholder(host) else "imap.qiye.163.com"
+        entered = input(f"请输入 IMAP 服务器地址（直接回车使用 {default_host}）：").strip()
+        host = entered or default_host
+    section["username"] = account
+    section["host"] = host
+    config["account"] = account
+    if args.save_mail_settings:
+        config_path.write_text(
+            yaml.safe_dump(config, allow_unicode=True, sort_keys=False), encoding="utf-8"
+        )
+        print(f"已保存邮箱地址和 IMAP 服务器到：{config_path}", file=sys.stderr)
+
+
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"sources": {}, "hashes": {}}
@@ -607,6 +649,7 @@ def build_provider(
 def run(args: argparse.Namespace) -> int:
     config_path = expand_path(args.config)
     config = load_config(config_path)
+    configure_imap_settings(config, args, config_path)
     provider = build_provider(config, args.provider, args.folder, args.query)
     since = parse_date(args.since)
     until = parse_date(args.until)
@@ -705,6 +748,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="只读扫描邮箱并下载疑似发票附件")
     parser.add_argument("--config", type=Path, default=default_config_path(), help="本地邮箱 YAML 配置")
     parser.add_argument("--provider", choices=["gmail", "imap", "netease", "netease-imap", "gmail-imap"])
+    parser.add_argument("--email", help="覆盖 IMAP 登录用的完整企业邮箱地址")
+    parser.add_argument("--imap-host", help="覆盖 IMAP 服务器地址")
+    parser.add_argument("--setup", action="store_true", help="交互式询问邮箱地址和 IMAP 服务器")
+    parser.add_argument("--save-mail-settings", action="store_true", help="保存邮箱地址和 IMAP 服务器；不保存密码")
     parser.add_argument("--folder", help="覆盖配置中的文件夹或 Gmail 标签")
     parser.add_argument("--query", help="覆盖 Gmail 搜索语句")
     parser.add_argument("--since", help="起始日期 YYYY-MM-DD")
