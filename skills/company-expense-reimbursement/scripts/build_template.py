@@ -42,6 +42,124 @@ def style_range(ws, cell_range: str, *, fill=None, font=None, alignment=None, ad
                 cell.border = border
 
 
+def build_reimbursement_page(ws, user: Mapping[str, str], company: Mapping[str, str], page_number: int = 1) -> None:
+    """Build one print page matching the company's paper reimbursement form."""
+    title_font = Font(name="Microsoft YaHei", size=20, bold=True, color=BLUE)
+    header_font = Font(name="Microsoft YaHei", size=11, bold=True, color=WHITE)
+    label_font = Font(name="Microsoft YaHei", size=11, bold=True, color=BLUE)
+    body_font = Font(name="Microsoft YaHei", size=10, color="000000")
+    small_font = Font(name="Microsoft YaHei", size=9, color=GRAY)
+    center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    blue_fill = PatternFill("solid", fgColor=BLUE)
+    light_fill = PatternFill("solid", fgColor=LIGHT_BLUE)
+    yellow_fill = PatternFill("solid", fgColor=PALE_YELLOW)
+
+    ws.title = "报销单" if page_number == 1 else f"报销单-第{page_number}页"
+    ws.sheet_view.showGridLines = False
+    for row in ws.iter_rows():
+        for cell in row:
+            cell.value = None
+            cell._style = cell._style.copy()
+    for col in range(1, 17):
+        ws.column_dimensions[chr(64 + col)].width = [5, 5, 5, 5, 22, 22, 15, 11, 12, 12, 14, 15, 11, 15, 15, 15][col - 1]
+    for row in range(1, 19):
+        ws.row_dimensions[row].height = 24
+    ws.row_dimensions[1].height = 32
+    ws.row_dimensions[2].height = 32
+
+    merges = ["A1:C2", "D1:L2", "M1:N1", "O1:P1", "M2:N2", "O2:P2",
+              "A3:B3", "C3:F3", "G3:H3", "I3:J3", "K3:L3", "M3:N3", "O3:P3",
+              "A4:B4", "C4:F4", "G4:H4", "I4:J4", "K4:L4", "M4:P4",
+              "A5:B5", "C5:D5", "E5:F5", "G5:H5", "I5:J5", "K5:L5", "M5:M5", "N5:O5", "P5:P5",
+              "A7:D7", "E7:F8", "G7:H7", "I7:I8", "J7:J8", "K7:K8", "L7:M7", "N7:P8",
+              "A15:F15", "A16:H16", "I16:N16", "A18:C18", "G18:I18", "M18:P18"]
+    for merge in merges:
+        if merge.split(":")[0] != merge.split(":")[1]:
+            ws.merge_cells(merge)
+
+    ws["A1"] = "化宏微"
+    ws["A1"].font = Font(name="Microsoft YaHei", size=14, bold=True, color=BLUE)
+    ws["A1"].alignment = center
+    ws["D1"] = "差旅费报销单"
+    ws["D1"].font = title_font
+    ws["D1"].alignment = center
+    for addr, value in {"M1": "预领款", "M2": "补领或缴还", "A3": "部门：", "G3": "年", "I3": "月", "K3": "日", "A4": "姓名", "G4": "职别", "K4": "出差事由", "A5": "出差起止日期", "C5": "自", "G5": "至", "K5": "共", "M5": "天", "N5": "附单据", "P5": "张"}.items():
+        ws[addr] = value
+        ws[addr].font = label_font
+        ws[addr].alignment = center
+    ws["C3"] = user.get("department", "")
+    ws["C4"] = user.get("name", "")
+    ws["I4"] = user.get("title", "")
+    ws["M4"] = ""
+    for addr in ("C3", "C4", "I4", "M4", "O1", "O2", "E5", "I5", "O3"):
+        ws[addr].fill = yellow_fill
+        ws[addr].alignment = left
+    ws["A7"] = "起讫"
+    ws["E7"] = "起讫地点"
+    ws["G7"] = "车船费"
+    ws["G8"] = "名称"
+    ws["H8"] = "金额"
+    ws["I7"] = "住宿费"
+    ws["J7"] = "出差补助"
+    ws["K7"] = "市内交通费"
+    ws["L7"] = "杂费"
+    ws["L8"] = "用途"
+    ws["M8"] = "金额"
+    ws["N7"] = "附注"
+    for row in (7, 8):
+        for col in range(1, 17):
+            cell = ws.cell(row, col)
+            cell.fill = blue_fill
+            cell.font = header_font
+            cell.alignment = center
+    for row in range(9, 15):
+        ws.merge_cells(start_row=row, start_column=5, end_row=row, end_column=6)
+        ws.merge_cells(start_row=row, start_column=14, end_row=row, end_column=16)
+        for col in range(1, 17):
+            cell = ws.cell(row, col)
+            cell.font = body_font
+            cell.alignment = left if col in (5, 6, 14, 15, 16) else center
+            cell.fill = yellow_fill if col not in (8, 9, 10, 11, 13) else PatternFill(fill_type=None)
+            if col in (8, 9, 10, 11, 13):
+                cell.number_format = '#,##0.00'
+    ws["A15"] = "合计"
+    ws["A15"].font = label_font
+    ws["A15"].alignment = center
+    for col, letter in ((8, "H"), (9, "I"), (10, "J"), (11, "K"), (13, "M")):
+        ws.cell(15, col).value = f"=SUM({letter}9:{letter}14)"
+        ws.cell(15, col).number_format = '#,##0.00'
+        ws.cell(15, col).font = label_font
+    ws["A16"] = "合计金额（大写）"
+    ws["A16"].font = label_font
+    ws["O16"] = "¥"
+    ws["O16"].alignment = center
+    ws["A18"] = "单位主管："
+    ws["G18"] = "复核："
+    ws["M18"] = "出差人："
+    for row in range(1, 19):
+        for col in range(1, 17):
+            ws.cell(row, col).border = border
+    for addr in ("A18", "G18", "M18"):
+        ws[addr].font = body_font
+        ws[addr].alignment = left
+    ws.freeze_panes = "A9"
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 1
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.page_margins = PageMargins(left=0.2, right=0.2, top=0.25, bottom=0.25, header=0.1, footer=0.1)
+    ws.print_area = "A1:P18"
+
+
+def add_reimbursement_page(wb: Workbook, user: Mapping[str, str], company: Mapping[str, str], page_number: int) -> object:
+    """Append a paper-form page for overflow rows and return the worksheet."""
+    ws = wb.create_sheet()
+    build_reimbursement_page(ws, user, company, page_number=page_number)
+    return ws
+
+
 def make_workbook(
     company: Mapping[str, str] | None = None,
     user: Mapping[str, str] | None = None,
@@ -65,115 +183,9 @@ def make_workbook(
     yellow_fill = PatternFill("solid", fgColor=PALE_YELLOW)
     red_fill = PatternFill("solid", fgColor=PALE_RED)
 
-    # Print-ready summary
-    ws.merge_cells("A1:L1")
-    ws["A1"] = "差旅费报销单"
-    ws["A1"].font = title_font
-    ws["A1"].alignment = center
-    ws.row_dimensions[1].height = 30
-    ws.merge_cells("A2:L2")
-    company_name = company.get("name") or "公司名称（本地配置）"
-    ws["A2"] = f"{company_name}｜模板副本（每次报销请复制后填写）"
-    ws["A2"].font = small_font
-    ws["A2"].alignment = center
-
-    labels = [("A4", "部门"), ("D4", "姓名"), ("F4", "职别"), ("H4", "出差事由"), ("A5", "出差起止日期"), ("F5", "共"), ("H5", "附件单据")]
-    for addr, text in labels:
-        ws[addr] = text
-        ws[addr].font = Font(name="Microsoft YaHei", size=10, bold=True, color=BLUE)
-        ws[addr].fill = light_fill
-        ws[addr].border = border
-        ws[addr].alignment = center
-    for merge in ("B4:C4", "E4:E4", "G4:G4", "I4:L4", "B5:E5", "G5:G5", "I5:L5"):
-        ws.merge_cells(merge)
-    for row in ws["A4:L5"]:
-        for cell in row:
-            cell.border = border
-            cell.font = Font(name="Microsoft YaHei", size=10, bold=bool(cell.font.bold), color=BLUE if cell.column in (1, 4, 6, 8) else "000000")
-            cell.alignment = left if cell.column not in (1, 4, 6, 8) else center
-    ws["B4"].fill = yellow_fill
-    ws["E4"].fill = yellow_fill
-    ws["G4"].fill = yellow_fill
-    ws["I4"].fill = yellow_fill
-    ws["B5"].fill = yellow_fill
-    ws["G5"].fill = yellow_fill
-    ws["I5"].fill = yellow_fill
-    ws["B4"] = user.get("department", "")
-    ws["E4"] = user.get("name", "")
-    ws["G4"] = user.get("title", "")
-    ws["F5"] = "共"
-    ws["H5"] = "附件单据"
-    ws["G5"] = ""
-    ws["I5"] = ""
-
-    headers = ["起讫日期", "起讫时间", "起讫地点", "车船费名称", "车船费金额", "住宿费", "出差补助", "市内交通费", "杂费用途", "杂费金额", "发票/附件索引", "备注"]
-    for col, value in enumerate(headers, 1):
-        cell = ws.cell(7, col, value)
-        cell.fill = blue_fill
-        cell.font = header_font
-        cell.alignment = center
-        cell.border = border
-    for row in range(8, 20):
-        for col in range(1, 13):
-            cell = ws.cell(row, col)
-            cell.font = body_font
-            cell.alignment = left if col in (3, 4, 9, 11, 12) else center
-            cell.border = border
-            if col in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12):
-                cell.fill = yellow_fill if col not in (5, 6, 7, 8, 10) else PatternFill(fill_type=None)
-            if col in (5, 6, 7, 8, 10):
-                cell.number_format = '#,##0.00'
-    ws.merge_cells("A20:D20")
-    ws["A20"] = "合计"
-    ws["A20"].font = Font(name="Microsoft YaHei", bold=True, color=BLUE)
-    ws["A20"].alignment = center
-    for col in range(1, 13):
-        ws.cell(20, col).border = border
-        ws.cell(20, col).fill = light_fill
-    for col in (5, 6, 7, 8, 10):
-        letter = chr(64 + col)
-        ws.cell(20, col).value = f"=SUM({letter}8:{letter}19)"
-        ws.cell(20, col).number_format = '#,##0.00'
-        ws.cell(20, col).font = Font(name="Microsoft YaHei", bold=True)
-    ws["K20"] = "总计"
-    ws["K20"].alignment = center
-    ws["L20"] = "=SUM(E20:H20,J20)"
-    ws["L20"].number_format = '#,##0.00'
-    ws["L20"].font = Font(name="Microsoft YaHei", bold=True)
-    ws.merge_cells("A22:C22")
-    ws["A22"] = "合计金额（大写，打印后手工填写）"
-    ws.merge_cells("D22:I22")
-    ws["D22"].fill = yellow_fill
-    ws["J22"] = "¥"
-    ws["K22"] = ""
-    ws.merge_cells("A24:D24")
-    ws["A24"] = "单位主管："
-    ws.merge_cells("E24:H24")
-    ws["E24"] = "复核："
-    ws.merge_cells("I24:L24")
-    ws["I24"] = "出差人："
-    for row in ws["A22:L24"]:
-        for cell in row:
-            cell.border = border
-            cell.font = body_font
-            cell.alignment = left
-    ws["A22"].font = small_font
-    ws["A24"].font = body_font
-    ws["E24"].font = body_font
-    ws["I24"].font = body_font
-    ws.freeze_panes = "A8"
-    ws.sheet_view.showGridLines = False
-    widths = {"A": 14, "B": 12, "C": 22, "D": 14, "E": 12, "F": 12, "G": 12, "H": 14, "I": 14, "J": 12, "K": 16, "L": 26}
-    for col, width in widths.items():
-        ws.column_dimensions[col].width = width
-    for r in range(8, 20):
-        ws.row_dimensions[r].height = 32
-    ws.page_setup.orientation = "landscape"
-    ws.page_setup.fitToWidth = 1
-    ws.page_setup.fitToHeight = 1
-    ws.sheet_properties.pageSetUpPr.fitToPage = True
-    ws.page_margins = PageMargins(left=0.2, right=0.2, top=0.35, bottom=0.35, header=0.1, footer=0.1)
-    ws.print_area = "A1:L24"
+    # Print-ready paper-form page. Overflow is handled by adding another page
+    # with the same structure, rather than extending the first page vertically.
+    build_reimbursement_page(ws, user, company)
 
     # Invoice detail sheet
     detail.sheet_view.showGridLines = False

@@ -32,6 +32,7 @@ When invoked from `business-travel-workflow`, load the case's `case.yaml` first.
    ```
 
    Keep the template unchanged; each reimbursement gets its own copy.
+   The first sheet is a paper-form page with six fixed expense rows. If the case needs more rows, append another identical paper-form sheet and continue the entries there; do not make the first printed page arbitrarily long.
 4. Put one source invoice or travel document per row on `发票明细`. Put the final reimbursement rows on `报销单`. Use the invoice/source index in `报销单` so every amount can be traced back to a source.
 5. Preserve uncertainty. Never infer an origin, destination, travel date, hotel stay date, or amount from a filename, invoice issue date, or an example image when the source does not state it. Leave the cell blank and flag it for the user.
 6. Before completion, report all validation findings. A field mismatch in the company name, tax number, address, phone, bank, or account is an immediate warning and must not be silently corrected.
