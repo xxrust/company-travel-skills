@@ -25,6 +25,7 @@ imap:
   ssl: true
   username: name@company.example
   # Prefer an environment variable or a file containing an app password.
+  # If both are omitted, the interactive command prompts without echoing it.
   password_env: COMPANY_MAIL_PASSWORD
   # password_file: C:\Users\<user>\.codex\private\company-mail-password.txt
   folder: INBOX

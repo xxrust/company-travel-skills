@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import base64
 import email
+import getpass
 import hashlib
 import html
 import imaplib
@@ -491,9 +492,13 @@ def read_secret(section: dict[str, Any], key: str, default_env: str) -> str:
     plain = section.get(key)
     if plain:
         return str(plain)
+    if sys.stdin.isatty():
+        value = getpass.getpass(f"请输入邮箱密码/应用专用密码（{env_name}，不会显示）：")
+        if value:
+            return value
     raise ValueError(
-        f"缺少邮箱密码。优先设置环境变量 {env_name}，或在本地配置中使用 {key}_file；"
-        "不要把密码提交到 GitHub。"
+        f"缺少邮箱密码。优先在交互式终端输入，或设置环境变量 {env_name}，"
+        f"或在本地配置中使用 {key}_file；不要把密码提交到 GitHub。"
     )
 
 
