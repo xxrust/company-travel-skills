@@ -7,6 +7,12 @@ description: "Create and validate company travel reimbursement workbooks from in
 
 Use this skill when the user sends an invoice PDF, an invoice address/link, an invoice scan/photo, or asks to prepare or check a company travel reimbursement. The deliverable is a copied Excel workbook plus a concise validation report.
 
+## Conversational entry for coworkers
+
+When a coworker says things such as “扫描我的企业邮箱”“找这次出差的发票” or “整理报销单”, treat that as authorization to run the local mailbox collector and document parsers through the agent's tools. Do not ask the coworker to open PowerShell or run Python scripts for ordinary use. Ask only for missing business facts or an explicit mailbox authorization; never ask them to paste a password into chat.
+
+Use the existing local mailbox credential and profile automatically. Search from the actual trip start date through the current date so hotel invoices issued after checkout are included. Start with a bounded read-only scan, then download and parse the candidates into the case folder. Report the number of messages, attachments, downloaded files, duplicate files, and unresolved validation findings in plain language.
+
 If an invoice address is a directly downloadable PDF or image, save a local copy in the current case folder and process it like an uploaded file. If it requires a login or cannot be fetched, ask the user to upload the document instead of guessing from the URL. When the user asks to scan Gmail or NetEase enterprise mail, read [references/mail-ingest.md](references/mail-ingest.md) and use the read-only connector or `scripts/mail_ingest.py`; never ask the skill to send, delete, move, or mark mail as read.
 
 When invoked from `business-travel-workflow`, load the case's `case.yaml` first. Link each invoice or travel document to a `case_id` and, when possible, a specific `leg_id` or lodging stay. Do not change planned or actual route fields from invoice text alone; return route/date conflicts to the workflow as open issues.

@@ -89,6 +89,8 @@ python .\scripts\validate_skills.py
 
 报销 Skill 支持只读扫描 Gmail 或网易企业邮箱，下载疑似发票/行程单附件，并用邮件 ID、附件 ID 和 SHA-256 去重。配置文件和凭据必须放在 `C:\Users\<user>\.codex\private`，示例见 `profiles/mail-config.example.yaml`，详细流程见 `skills/company-expense-reimbursement/references/mail-ingest.md`。
 
+日常使用者不需要运行命令行。直接在 Codex 中说“扫描我这次出差的企业邮箱并整理报销单”，Skill 会使用本机已配置的只读凭据、按出差开始日期到当天扫描邮箱、下载附件、调用 MinerU 并生成案件报销单。下面的命令仅用于首次配置、维护和故障排查。
+
 首次接入先执行候选预览：
 
 ```powershell

@@ -7,6 +7,8 @@ description: "Coordinate a complete company business trip as one case from appli
 
 This is the user-facing entry point for a complete business trip. Use it when the user asks to create, update, report, close, or reimburse one trip and the work spans more than one phase.
 
+Colleagues use this workflow through natural-language requests. When they ask to find trip invoices, scan enterprise mail, or prepare reimbursement, the agent should invoke the phase skills and local scripts internally. Do not expose PowerShell or Python commands as a prerequisite for ordinary users. Ask only for missing trip dates, destination, or business facts; credentials remain in the local machine profile.
+
 The unit of work is a **差旅案件**. One agent coordinates the case; the phase skills provide focused instructions:
 
 - `travel-application` for the planned trip and approval material.
