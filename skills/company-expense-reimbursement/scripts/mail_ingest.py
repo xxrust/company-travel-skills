@@ -243,7 +243,21 @@ class ImapProvider:
             self.connection = imaplib.IMAP4_SSL(self.host, self.port)
         else:
             self.connection = imaplib.IMAP4(self.host, self.port)
-        self.connection.login(self.username, self.password)
+        try:
+            self.connection.login(self.username, self.password)
+        except imaplib.IMAP4.error as exc:
+            message = str(exc)
+            if "DOMAINNOTEXIST" in message.upper():
+                raise RuntimeError(
+                    "网易邮箱服务器拒绝了登录：邮箱地址中的域名不存在。"
+                    "请把 mail-config.yaml 中的 account 和 imap.username 改成真实的完整企业邮箱地址，"
+                    "并确认 imap.host 是企业邮箱后台提供的服务器。当前错误不是密码错误。"
+                ) from exc
+            if "AUTH" in message.upper() or "LOGIN" in message.upper():
+                raise RuntimeError(
+                    "网易邮箱登录失败。请确认邮箱地址、密码/客户端专用密码，以及企业邮箱是否允许 IMAP 登录。"
+                ) from exc
+            raise
         status, _ = self.connection.select(self.folder, readonly=True)
         if status != "OK":
             raise RuntimeError(f"无法以只读方式打开邮箱文件夹：{self.folder}")
