@@ -36,7 +36,7 @@ gmail:
 ```yaml
 provider: imap
 imap:
-  host: imap.qiye.163.com
+  host: imap.ym.163.com
   port: 993
   ssl: true
   username: name@company.example
@@ -89,7 +89,7 @@ python skills\company-expense-reimbursement\scripts\mail_ingest.py `
   --save-mail-settings --setup --dry-run
 ```
 
-`--save-mail-settings` 只保存邮箱地址和 IMAP 服务器，不保存密码。邮箱域名和 IMAP 主机是两个独立设置，不能从一个值可靠推导另一个值。
+`--save-mail-settings` 只保存邮箱地址和 IMAP 服务器，不保存密码。邮箱域名和 IMAP 主机是两个独立设置；如果公开 DNS 的 MX 记录是 `mx.ym.163.com`，网易企业邮通常使用 `imap.ym.163.com`。
 
 采集器默认只下载 PDF、PNG、JPG、JPEG 和 OFD，并用邮件主题、发件人、正文和附件名判断是否像发票或交通凭证。需要把所有支持格式的附件交给人工筛选时，使用 `--include-all-attachments`。
 

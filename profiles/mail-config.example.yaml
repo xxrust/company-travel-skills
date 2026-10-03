@@ -18,9 +18,9 @@
 provider: imap
 account: name@company.example
 imap:
-  # NetEase enterprise mail host must be confirmed from the company's mail
-  # administration page.  Do not guess a host when the server rejects login.
-  host: imap.qiye.163.com
+  # Use the IMAP host shown by the mail admin page.  For domains whose MX is
+  # mx.ym.163.com, the matching host is usually imap.ym.163.com.
+  host: imap.ym.163.com
   port: 993
   ssl: true
   username: name@company.example
