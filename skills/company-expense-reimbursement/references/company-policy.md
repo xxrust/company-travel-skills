@@ -11,6 +11,8 @@ Compare values after trimming whitespace and treating obvious OCR punctuation va
 - If A→B occurs on a travel date and lodging is in B for consecutive days, lodging belongs on the A→B line.
 - Multiple lodging invoices in B are written as multiple rows from top to bottom in date order.
 - The travel path should form a closed loop. If it does not, warn the user.
+- Leave all travel allowance amounts and their subtotal blank for finance. Leave the Chinese uppercase grand total blank for finance as well.
+- Print the paper form from the generated HTML in a browser so column proportions do not depend on a spreadsheet application's page scaling.
 - Do not fill or print signatures; signatures are handwritten.
 
 ## Validation language

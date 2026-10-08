@@ -14,6 +14,9 @@ import fitz
 
 def default_copies(kind: str) -> int:
     kind = kind.lower()
+    # 结账单只作辅助凭证，不打印
+    if kind in {"结账单", "settlement", "checkout"}:
+        return 0
     if kind in {"vat", "住宿", "hotel", "train", "火车", "flight", "机票", "车船费"}:
         return 2
     return 1

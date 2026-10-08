@@ -1,74 +1,58 @@
 ---
 name: company-expense-reimbursement
-description: "Create and validate company travel reimbursement workbooks from invoice PDFs, invoice links, scans, or travel details. Use MinerU for supplied PDFs/images, load private company and traveler profiles locally, copy the reusable Excel template, and flag invoice-field errors, missing hotel stay dates, and non-closed routes."
+description: "从发票 PDF、图片、链接和出差记录生成并校验公司差旅报销单。"
 ---
 
-# Company Expense Reimbursement
+# 公司差旅报销
 
-Use this skill when the user sends an invoice PDF, an invoice address/link, an invoice scan/photo, or asks to prepare or check a company travel reimbursement. The deliverable is a copied Excel workbook plus a concise validation report.
+用户发送发票、出差资料，或要求整理报销时使用本 skill。普通同事只需用自然语言提出请求，不要求其打开 PowerShell 或运行脚本。使用本机已保存的邮箱凭据和本地人员/公司配置；绝不要求用户在聊天中粘贴密码。
 
-## Conversational entry for coworkers
+## 自然语言入口
 
-When a coworker says things such as “扫描我的企业邮箱”“找这次出差的发票” or “整理报销单”, treat that as authorization to run the local mailbox collector and document parsers through the agent's tools. Do not ask the coworker to open PowerShell or run Python scripts for ordinary use. Ask only for missing business facts or an explicit mailbox authorization; never ask them to paste a password into chat.
+“扫描我这次出差的企业邮箱并整理报销单”表示可以读取本次出差日期范围内的邮箱。先做只读扫描，再下载候选附件；报告邮件数、附件数、下载数、重复数和未解决问题。PDF 或图片必须交给 `$mineru-pdf-to-md` 解析。
 
-Use the existing local mailbox credential and profile automatically. Search from the actual trip start date through the current date so hotel invoices issued after checkout are included. Start with a bounded read-only scan, then download and parse the candidates into the case folder. Report the number of messages, attachments, downloaded files, duplicate files, and unresolved validation findings in plain language.
+## 必须执行的流程
 
-If an invoice address is a directly downloadable PDF or image, save a local copy in the current case folder and process it like an uploaded file. If it requires a login or cannot be fetched, ask the user to upload the document instead of guessing from the URL. When the user asks to scan Gmail or NetEase enterprise mail, read [references/mail-ingest.md](references/mail-ingest.md) and use the read-only connector or `scripts/mail_ingest.py`; never ask the skill to send, delete, move, or mark mail as read.
+1. 读取 `references/company-policy.md`、`references/local-profile.md`、`references/hotel-standard.md` 和 `references/mail-ingest.md`。身份信息只能来自本地配置。
+2. 对每份 PDF/图片调用 `$mineru-pdf-to-md`，保留源文件名和页码。MinerU 结果异常时可用 PDF 文本层交叉检查，但要保留 MinerU 文件并标记人工复核。
+3. 用 `scripts/new_workbook.py` 生成每次独立的报销工作簿（不再依赖 `assets/company-expense-template.xlsx`，模板由 `scripts/build_template.py` 在运行时构建）。第一张纸面数据表固定 6 行；超过 6 行时追加同版式第二页，不拉长第一页。
+4. 用 `scripts/render_paper_form.py` 将纸面数据表渲染为独立 HTML 打印页。HTML 按公司实物表格的单日期列、费用分栏比例和纵向 A4 版式制作；打印时在浏览器中打开 HTML，不依赖 Microsoft Excel 或 WPS 的表格布局引擎。
+5. `发票明细` 每份来源文件占一行；纸面报销行必须能通过来源索引追溯到原始文件。
+6. 不从文件名、开票日期或示例图猜测出发地、到达地、入住日期、离店日期或金额。缺失就留空并报告。
+7. 公司名称、税号、地址、电话、开户行、账号与发票不一致时立即提出，禁止静默改写。
 
-When invoked from `business-travel-workflow`, load the case's `case.yaml` first. Link each invoice or travel document to a `case_id` and, when possible, a specific `leg_id` or lodging stay. Do not change planned or actual route fields from invoice text alone; return route/date conflicts to the workflow as open issues.
+## 业务规则
 
-## Required workflow
+- 住宿发票必须有入住和离店日期，缺任一项就标记“待补充入住/离店时间”，不能当作完整凭证。
+- A 到 B 的出差当天发生连续住宿，住宿费写在 A 到 B 行；B 地有多张住宿票时按日期从上到下分行。
+- 路线必须闭环。末点不回到起点时标记“路线未闭环”，指出缺少的行程，禁止虚构返程。
+- 第一条行程必须单独核对方向和交通方式。示例：`公司→宁波 TXC P4` 的车船费名称为 `公司车自驾`。
+- 纸面表中的日期必须写完整日期或完整的“月日”，不得只写数字日号。表头“出差起止日期”必须完整可见。
+- “出差补助”金额和对应小计由财务填写；生成工作簿时逐行补助金额及该列小计必须留空，不得计入自动合计。
+- “合计金额（大写）”由财务手工填写，生成工作簿时金额栏保持空白；“附单据”只统计正式报销单据，辅助结账单不重复计数。
+- 已有工作簿可调用 `scripts/fill_total.py workbook.xlsx` 检查非补助费用小计；脚本不得写入或覆盖财务填写的补助金额和大写合计。
+- 报销单附注只解释特殊情况；没有特殊情况时留空。普通发票索引、来源文件和路线校验结论分别保存在“发票明细”和校验报告中，不自动写进纸面报销单。
+- 住宿、火车、机票等需要打印 2 份；其他单据打印 1 份。住宿结账单只作辅助凭证，不打印，不重复计入金额。
+- 签名栏保持空白，打印后手写。
 
-1. Read [references/company-policy.md](references/company-policy.md), [references/local-profile.md](references/local-profile.md), [references/hotel-standard.md](references/hotel-standard.md), and [references/mail-ingest.md](references/mail-ingest.md) before validating invoice fields or travel rules. Company and traveler identity data must come from the local profile, never from this public repository.
-   If mailbox collection is requested, first run a dry run or list operation, show the candidate message and attachment count, then download only supported invoice/travel document attachments. Keep `mail-index.json` with the downloaded files and pass each PDF/image to `$mineru-pdf-to-md`.
-2. For every supplied PDF or page image, run the local MinerU workflow from `$mineru-pdf-to-md` first. Preserve the source filename and page number. Do not silently replace MinerU with a generic OCR/text extractor. If the local model is unavailable, report the blocker.
-   If MinerU's Markdown has obvious character corruption or misses a field, use the PDF's embedded text layer only as a cross-check, keep the MinerU artifact, and mark the affected field as `需人工复核` when the two sources disagree.
-3. Create a new workbook. The script copies the blank public template when no local profile is found, and generates a locally populated copy when a profile is found:
+## 模板和视觉自检
 
-   ```powershell
-   python scripts/new_workbook.py --output "path\to\报销单_姓名_YYYYMMDD.xlsx" \
-     --profile "C:\Users\<user>\.codex\private\company-profile.yaml" \
-     --user-profile "C:\Users\<user>\.codex\private\user-profile.yaml"
-   ```
+模板源文件必须以 UTF-8 保存。每次生成后必须：
 
-   Keep the template unchanged; each reimbursement gets its own copy.
-   The first sheet is a paper-form page with six fixed expense rows. If the case needs more rows, append another identical paper-form sheet and continue the entries there; do not make the first printed page arbitrarily long.
-4. Put one source invoice or travel document per row on `发票明细`. Put the final reimbursement rows on `报销单`. Use the invoice/source index in `报销单` so every amount can be traced back to a source.
-5. Preserve uncertainty. Never infer an origin, destination, travel date, hotel stay date, or amount from a filename, invoice issue date, or an example image when the source does not state it. Leave the cell blank and flag it for the user.
-6. Before completion, report all validation findings. A field mismatch in the company name, tax number, address, phone, bank, or account is an immediate warning and must not be silently corrected.
+1. 用 `openpyxl` 重新打开工作簿，核对工作表名称、合并单元格、字段坐标和填充值；模板字段和填充脚本的坐标不一致时停止输出。
+2. 检查所有文本不包含 `?`、乱码替代字符或未经授权的品牌文字（例如“化宏微”）。
+3. 检查蓝底表头及其下方子表头均为白字；日期字段、日期值、第一行方向和交通方式均非空。
+4. 用浏览器将 HTML 打印页导出为纵向 A4 PDF，再渲染为图片进行视觉检查。确认日期、地点、车船费、住宿费、补助、交通费、杂费和附注列宽接近纸质原表，单据仍是一页固定表格。
+5. 视觉检查失败时继续修改模板并重新生成，不能把未检查的工作簿交给用户。
 
-## Expense mapping and travel rules
+## 输出
 
-- Classify taxi and other local rides as `市内交通费` unless the user says the route is intercity; classify air tickets or itinerary receipts as `车船费`; classify hotel invoices as `住宿费`.
-- A hotel invoice is incomplete for reimbursement unless it contains both check-in and check-out dates. The amount may be entered for review, but the row must be marked `待补入住/离店时间`.
-- If travel from A to B happened on a date and the employee stayed in B for consecutive days, put the lodging amount on the same A→B row. If B has multiple hotel invoices, add rows from top to bottom in date order and keep each source index visible.
-- Check the route as a sequence. The last destination must return to the initial origin. If the evidence does not form a closed loop, issue `路线未闭环` and show the missing or unmatched leg. Do not manufacture a return leg.
-- Leave all signature cells blank. The reimbursement form is intentionally unsigned; the traveler and reviewers sign by hand after printing.
+输出工作簿包含：
 
-## 打印规则
+- `报销单`：纸面打印版和合计公式；
+- `发票明细`：来源、页码、票据字段、住宿日期、路线和校验状态；
+- `校验与说明`：本地公司资料、规则、待人工确认事项。
 
-- 增值税发票（住宿为主）、火车票和机票默认打印 2 份。
-- 其他单据默认打印 1 份。
-- 使用 `scripts/print_packet.py` 生成打印包；它按输入文件顺序合并单据，在每页右下角写入日期和连续页码，并生成同名 JSON 来源索引。
-- `--list-printers` 可列出本机打印机；`--printer` 配合 `--print` 使用 Windows `printto` 发送到指定打印机。
+同时生成简短校验报告，列出已解析的文件和页码、已确认字段、未解决问题及打印份数。报销单只能在视觉检查通过并明确列出人工复核事项后交付。
 
-```powershell
-python scripts/print_packet.py .\invoice-a.pdf .\invoice-b.pdf `
-  --kind vat `
-  --output .\cases\TRIP-YYYY-001\03-发票凭证\打印包.pdf `
-  --trip-date 2026-09-30
-
-python scripts/print_packet.py --list-printers
-python scripts/print_packet.py .\打印包.pdf --kind other --copies 1 `
-  --output .\cases\TRIP-YYYY-001\03-发票凭证\打印包-带页码.pdf `
-  --printer "打印机名称" --print
-```
-
-## Output requirements
-
-- `报销单` contains the print-ready summary and formulas for category totals.
-- `发票明细` contains extracted fields, source/page traceability, hotel stay fields, route fields, and validation status.
-- `校验与说明` contains the locally loaded company master data and the rules used for the run. If no local profile is available, leave identity fields blank and report that configuration is missing.
-- State which PDFs/pages were converted, which fields were confirmed, and every unresolved issue. If an invoice contains an address or other company field that differs from the master data, call it out before presenting the workbook as ready.
-
-The template layout and column semantics are documented in [references/field-mapping.md](references/field-mapping.md).
+模板字段语义见 [references/field-mapping.md](references/field-mapping.md)。

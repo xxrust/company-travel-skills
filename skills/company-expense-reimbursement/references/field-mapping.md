@@ -2,25 +2,32 @@
 
 ## `报销单`
 
-The first sheet is a print-ready copy of the company's paper form. One page has six fixed detail rows. Each row is one travel leg or one linked lodging row. When more than six rows are needed, create another sheet with the same page layout and continue the rows there; do not extend the first page vertically.
+第一张工作表保存纸面报销数据，第 9 至 14 行是固定 6 行明细；超过 6 行必须调用 `add_reimbursement_page(...)` 增加同版式工作表。打印版由 `scripts/render_paper_form.py` 生成独立 HTML，按公司纸表使用单列起讫日期并匹配费用栏宽，采用纵向 A4 输出。
 
-| Column | Meaning |
+| 区域 | 含义 |
 |---|---|
-| 起讫日期 | Day fields in the fixed paper-form row |
-| 起讫地点 | `A→B`; keep the direction visible |
-| 车船费名称 / 金额 | Taxi, train, flight, company car, etc. |
-| 住宿费 | Hotel amount linked to the travel leg |
-| 出差补助 | Manual company-approved allowance |
-| 市内交通费 | Local rides not treated as intercity transport |
-| 杂费用途 / 金额 | Other approved expenses |
-| 附注 | Source index, dates, missing fields, or route warnings |
+| `A5:B5` | 出差起止日期标签，必须完整显示 |
+| `E5:F5` / `I5:J5` | 起止日期值，写完整日期 |
+| `A9:D14` | 起讫日期和时间，四格分别为日、时、日、时 |
+| `E9:F14` | 起讫地点，方向写成 `A→B` |
+| `G9:G14` / `H9:H14` | 车船费名称和金额；第一行必须核对交通方式 |
+| `I9:I14` | 住宿费，按 A→B 规则挂在对应行 |
+| `J9:J14` / `J15` | 出差补助金额与小计，留空，由财务填写 |
+| `K9:K14` | 市内交通费 |
+| `L9:M14` | 杂费用途和金额 |
+| `N9:P14` | 特殊情况说明；没有特殊情况时留空 |
+| `H15:I15` / `K15` / `M15` | 车船费、住宿费、市内交通费和杂费小计，由公式计算；不含出差补助 |
+| `I16:N16` | 人民币大写金额留空，由财务填写 |
+| `P5` | 正式报销单据数量，不含辅助结账单 |
 
-The total row uses formulas. Signature cells are deliberately blank. The paper form is configured for landscape A4 printing.
+蓝底表头（第 7、8 行）必须使用白字。签名区域必须留空。
+
+HTML 打印页按实物表格显示 10 列：起讫日期、起讫地点、车船费名称、车船费金额、住宿费、出差补助、市内交通费、杂费用途、杂费金额和附注。起讫日期与时间在同一格分行显示；出差补助和合计大写栏保持空白。打印时使用浏览器，不直接从 XLSX 打印纸面表。
 
 ## `发票明细`
 
-One row per invoice or travel document. Keep source filename and page number, invoice/order number, dates, seller, buyer fields, amounts, origin/destination, hotel dates, category, and validation status. Amounts should be numeric cells when extracted with confidence; uncertain amounts stay blank and are explained in `备注`.
+每份发票或辅助凭证一行，保留源文件、页码、票据号、日期、购买方字段、金额、入住/离店日期、路线、分类、是否可报销和校验状态。来源索引写在这里，不写进纸面报销单附注。
 
 ## `校验与说明`
 
-This sheet stores the expected company master data, the run-level checklist, and the reminder that the template is copied for each claim.
+保存本地公司主数据、运行规则和人工复核事项。私有身份数据不写入公开 skill 仓库。
