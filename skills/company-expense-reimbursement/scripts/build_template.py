@@ -29,118 +29,131 @@ border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 def build_reimbursement_page(ws, user: Mapping[str, str], company: Mapping[str, str], page_number: int = 1) -> None:
     """Create one fixed-size page matching the supplied paper form."""
-    title_font = Font(name="Microsoft YaHei", size=20, bold=True, color=BLUE)
-    label_font = Font(name="Microsoft YaHei", size=11, bold=True, color=BLUE)
-    header_font = Font(name="Microsoft YaHei", size=10, bold=True, color=WHITE)
+    title_font = Font(name="SimSun", size=20, underline="double", color=BLUE)
+    label_font = Font(name="Microsoft YaHei", size=10, color=BLUE)
+    header_font = Font(name="Microsoft YaHei", size=10, bold=True, color=BLUE)
     body_font = Font(name="Microsoft YaHei", size=10, color="000000")
     center = Alignment(horizontal="center", vertical="center", wrap_text=True)
     left = Alignment(horizontal="left", vertical="center", wrap_text=True)
-    blue_fill = PatternFill("solid", fgColor=BLUE)
-    yellow_fill = PatternFill("solid", fgColor=PALE_YELLOW)
+    line = Side(style="thin", color="7897BA")
 
     ws.title = "报销单" if page_number == 1 else f"报销单-第{page_number}页"
     ws.sheet_view.showGridLines = False
-    # Four narrow date columns and wider label/value columns follow the paper form.
-    # Keep the four date/time cells narrow, give the location field enough
-    # room, and keep the final note field close to the supplied paper form.
-    widths = [9, 9, 9, 9, 18, 18, 12, 12, 11, 11, 11, 11, 11, 6, 6, 6]
+    widths = [9.0, 22.0, 7.0, 7.0, 8.0, 8.0, 8.0, 6.5, 7.5, 9.0]
     for index, width in enumerate(widths, 1):
         ws.column_dimensions[chr(64 + index)].width = width
-    for row in range(1, 19):
-        ws.row_dimensions[row].height = 25
-    ws.row_dimensions[1].height = 30
-    ws.row_dimensions[2].height = 30
-    ws.row_dimensions[5].height = 31
-    ws.row_dimensions[7].height = 29
-    ws.row_dimensions[8].height = 29
+    heights = {1: 20, 2: 16, 3: 18, 4: 30, 5: 24, 6: 20, 7: 18, 14: 21, 15: 23, 16: 24}
+    for row, height in heights.items():
+        ws.row_dimensions[row].height = height
+    for row in range(8, 14):
+        ws.row_dimensions[row].height = 23
 
-    merges = [
-        "A1:C2", "D1:L2", "M1:N1", "O1:P1", "M2:N2", "O2:P2",
-        "A3:B3", "C3:F3", "G3:H3", "I3:J3", "K3:L3", "M3:N3", "O3:P3",
-        "A4:B4", "C4:F4", "G4:H4", "I4:J4", "K4:L4", "M4:P4",
-        "A5:B5", "C5:D5", "E5:F5", "G5:H5", "I5:J5", "K5:L5", "M5:M5", "N5:O5", "P5:P5",
-        "A7:D7", "E7:F8", "G7:H7", "I7:I8", "J7:J8", "K7:K8", "L7:M7", "N7:P8",
-        "A15:F15", "A16:H16", "I16:N16", "A18:C18", "G18:I18", "M18:P18",
-    ]
-    for merge in merges:
+    for merge in (
+        "A1:G2", "H1:I1", "H2:I2", "A3:B3", "C3:G3", "H3:J3",
+        "B4:C4", "G4:J4", "A5:B5", "C5:G5", "H5:J5",
+        "A6:A7", "B6:B7", "C6:D6", "E6:E7", "F6:F7", "G6:G7",
+        "H6:I6", "J6:J7", "A14:C14", "A15:F15", "G15:I15", "A16:C16", "D16:G16", "H16:J16",
+    ):
         ws.merge_cells(merge)
 
-    ws["A1"] = ""
-    ws["D1"] = "差旅费报销单"
-    ws["D1"].font = title_font
-    ws["D1"].alignment = center
     labels = {
-        "M1": "预领款", "M2": "补领或缴还", "A3": "部门", "G3": "年", "I3": "月", "K3": "日",
-        "A4": "姓名", "G4": "职别", "K4": "出差事由", "A5": "出差起止日期", "C5": "自", "G5": "至",
-        "K5": "共", "M5": "天", "N5": "附单据", "A7": "起讫", "E7": "起讫地点", "G7": "车船费",
-        "G8": "名称", "H8": "金额", "I7": "住宿费", "J7": "出差补助", "K7": "市内交通费",
-        "L7": "杂费", "L8": "用途", "M8": "金额", "N7": "附注", "A15": "合计",
-        "A16": "合计金额（大写）", "A18": "单位主管：", "G18": "复核：", "M18": "出差人：",
+        "A1": "差 旅 费 报 销 单", "H1": "预领款", "H2": "补领或缴还", "A3": "部门：",
+        "A4": "姓　名", "D4": "职　别", "F4": "出差\n事由", "A5": "出差起止日期",
+        "C5": "自　　　　　　至", "H5": "附单据",
+        "A6": "起讫\n日期", "B6": "起讫地点", "C6": "车船费", "C7": "名称", "D7": "金额",
+        "E6": "宿费", "F6": "出差\n补助", "G6": "市内\n交通费", "H6": "杂费",
+        "H7": "用途", "I7": "金额", "J6": "附注", "A14": "合　　计",
+        "A15": "合计金额（大写）", "A16": "单位主管：", "D16": "复　核：", "H16": "出差人：",
     }
     for addr, value in labels.items():
-        ws[addr] = value
-        ws[addr].font = label_font
-        ws[addr].alignment = center
+        cell = ws[addr]
+        cell.value = value
+        cell.font = title_font if addr == "A1" else label_font
+        cell.alignment = center if addr in ("A1", "A6", "B6", "C6", "E6", "F6", "G6", "H6", "J6", "A14") else left
 
-    # Every blue table header is white, including the nested 起讫 row.
-    for row in (7, 8):
-        for col in range(1, 17):
-            ws.cell(row, col).fill = blue_fill
-            ws.cell(row, col).font = header_font
-            ws.cell(row, col).alignment = center
-    for addr, value in {"A8": "日", "B8": "时", "C8": "日", "D8": "时"}.items():
-        ws[addr] = value
-        ws[addr].fill = blue_fill
-        ws[addr].font = header_font
-        ws[addr].alignment = center
+    ws["A3"] = "部门：" + user.get("department", "")
+    ws["B4"] = user.get("name", "")
+    ws["E4"] = user.get("title", "")
+    ws["C5"] = "自　　　　　　至　　　　　共　　天"
+    ws["H5"] = "附单据　　　　　张"
+    ws["J1"] = ""
+    ws["J2"] = ""
+    ws["C3"] = "年　　月　　日"
+    ws["C3"].font = label_font
+    ws["C3"].alignment = center
+    ws.row_dimensions[14].hidden = True
+    ws.row_dimensions[14].height = 0
+    ws["G15"] = "￥："
 
-    ws["C3"] = user.get("department", "")
-    ws["C4"] = user.get("name", "")
-    ws["I4"] = user.get("title", "")
-    for addr in ("C3", "C4", "I4", "M4", "E5", "I5", "L5", "O1", "O2", "O3", "P5"):
-        ws[addr].fill = yellow_fill
-        ws[addr].font = body_font
-        ws[addr].alignment = left
-
-    for row in range(9, 15):
-        ws.merge_cells(start_row=row, start_column=5, end_row=row, end_column=6)
-        ws.merge_cells(start_row=row, start_column=14, end_row=row, end_column=16)
-        for col in range(1, 17):
+    # The photographed form has a narrow, single date field; give it enough
+    # room for a complete month/day while keeping the location field dominant.
+    for row in range(6, 8):
+        for col in range(1, 11):
             cell = ws.cell(row, col)
-            cell.border = border
+            cell.font = header_font
+            cell.alignment = center
+            cell.fill = PatternFill(fill_type=None)
+    for row in range(8, 14):
+        for col in range(1, 11):
+            cell = ws.cell(row, col)
             cell.font = body_font
-            cell.alignment = left if col in (5, 6, 14, 15, 16) else center
-            if col not in (8, 9, 10, 11, 13):
-                cell.fill = yellow_fill
-            if col in (8, 9, 10, 11, 13):
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=False) if col == 1 else (center if col in (3, 4, 5, 6, 7, 9) else left)
+            if col in (4, 5, 7, 9):
                 cell.number_format = "#,##0.00"
-
-    for row in range(1, 19):
-        for col in range(1, 17):
-            ws.cell(row, col).border = border
-    for col, letter in ((8, "H"), (9, "I"), (11, "K"), (13, "M")):
-        ws.cell(15, col).value = f"=SUM({letter}9:{letter}14)"
-        ws.cell(15, col).number_format = "#,##0.00"
-        ws.cell(15, col).font = label_font
-        ws.cell(15, col).alignment = center
-    ws["A15"].font = label_font
-    ws["A15"].alignment = center
-    ws["A16"].font = label_font
-    ws["A16"].alignment = left
-    ws["O16"] = "￥"
-    ws["O16"].alignment = center
-    for addr in ("A18", "G18", "M18"):
+            if col == 3:
+                cell.font = Font(name="Microsoft YaHei", size=9)
+                cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=False, shrink_to_fit=True)
+    for row in range(6, 15):
+        for col in range(1, 11):
+            cell = ws.cell(row, col)
+            cell.border = Border(left=line, right=line, top=line, bottom=line)
+    for col, column in ((4, "D"), (5, "E"), (7, "G"), (9, "I")):
+        ws.cell(14, col).value = f'=IF(SUM({column}8:{column}13)=0,"",SUM({column}8:{column}13))'
+        ws.cell(14, col).number_format = "#,##0.00"
+        ws.cell(14, col).alignment = center
+    for row in (3, 4, 5):
+        for col in range(1, 11):
+            ws.cell(row, col).border = Border(bottom=line)
+    ws["A3"].border = Border(bottom=Side(style="dashed",color="7897BA"))
+    ws["B3"].border = Border(bottom=Side(style="dashed",color="7897BA"))
+    ws["C3"].border = Border()
+    ws["H3"].border = Border()
+    for row, starts, ends in ((4,(1,2,4,5,6,7),(1,3,4,5,6,10)),(5,(1,3,8),(2,7,10))):
+        for col in range(1,11):
+            ws.cell(row,col).border = Border(top=line,bottom=line,left=line if col in starts else Side(),right=line if col in ends else Side())
+    ws["J3"].border = Border(right=line, top=line, bottom=line)
+    ws["A4"].border = Border(left=line, bottom=line)
+    ws["J4"].border = Border(right=line, bottom=line)
+    ws["A5"].border = Border(left=line, bottom=line)
+    ws["J5"].border = Border(right=line, bottom=line)
+    for row in (1, 2):
+        for col in range(8, 11):
+            ws.cell(row, col).border = Border(left=line, right=line, top=line, bottom=line)
+    for addr in ("A3", "B4", "E4", "G4", "C5", "H5", "J1", "J2"):
+        ws[addr].font = body_font
+        ws[addr].alignment = left
+    ws["E4"].alignment = Alignment(horizontal="left",vertical="center",shrink_to_fit=True,wrap_text=False)
+    ws["C5"].font = Font(name="Microsoft YaHei",size=9)
+    ws["C5"].alignment = Alignment(horizontal="center",vertical="center",shrink_to_fit=True,wrap_text=False)
+    for col in range(1, 11):
+        ws.cell(15, col).border = Border(top=line, bottom=line, left=line if col == 1 else Side(), right=line if col == 10 else Side())
+    ws["I15"].border = Border(top=line,bottom=line,right=line)
+    ws["J15"].border = Border(top=line,bottom=line,left=line,right=line)
+    ws["G15"].alignment = Alignment(horizontal="left",vertical="center",indent=2)
+    ws["G15"].font = body_font
+    for addr in ("A16", "D16", "H16"):
         ws[addr].font = body_font
         ws[addr].alignment = left
 
-    ws.freeze_panes = "A9"
+    ws.freeze_panes = "A8"
     ws.page_setup.orientation = "portrait"
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.page_setup.fitToWidth = 1
     ws.page_setup.fitToHeight = 1
     ws.sheet_properties.pageSetUpPr.fitToPage = True
     ws.page_margins = PageMargins(left=0.2, right=0.2, top=0.25, bottom=0.25, header=0.1, footer=0.1)
-    ws.print_area = "A1:P18"
+    ws.print_area = "A1:J16"
+    ws.print_options.horizontalCentered = True
 
 
 def add_reimbursement_page(wb: Workbook, user: Mapping[str, str], company: Mapping[str, str], page_number: int):

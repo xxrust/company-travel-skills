@@ -47,7 +47,7 @@ imap:
 优先使用 `password_env`、`password_file` 或 Windows 凭据管理器。Windows 凭据管理器使用 Generic Credential 的 Target，例如：
 
 ```yaml
-password_credential_target: company-expense-reimbursement:liangyh@posenele.com
+password_credential_target: company-expense-reimbursement:your-account@example.com
 ```
 
 脚本通过 Windows 凭据 API 在本机进程内读取密码，不打印、不写入索引、不提交到 GitHub。不要把明文密码、应用专用密码、OAuth token 或客户端密钥提交到 GitHub。

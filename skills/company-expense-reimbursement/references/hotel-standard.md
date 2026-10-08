@@ -16,9 +16,9 @@
 
 ```powershell
 python scripts/hotel_benchmark.py `
-  --location "宁波 TXC P4" `
-  --check-in 2026-09-28 `
-  --check-out 2026-09-30 `
-  --output .\cases\TRIP-2026-002_TXC-P4\03-发票凭证\hotel-benchmark.json `
+  --location "示例城市 示例项目" `
+  --check-in 2026-01-10 `
+  --check-out 2026-01-12 `
+  --output .\cases\TRIP-2026-001\03-发票凭证\hotel-benchmark.json `
   --open-browser
 ```

@@ -24,9 +24,9 @@ Use `scripts/new_application.py` to fill the company form without asking the age
 ```powershell
 python scripts/new_application.py `
   --case-dir "path\to\TRIP-YYYY-001" `
-  --start 2026-09-28 --end 2026-09-30 `
-  --destination "宁波 TXC P4" `
-  --purpose "在TXC P4安装4台点胶设备并进行现场调试"
+  --start 2026-01-10 --end 2026-01-12 `
+  --destination "示例城市 示例项目" `
+  --purpose "执行现场安装与调试"
 ```
 
 The script fills both printable copies in the company form, preserves blank approval/signature cells, refuses to overwrite an existing output file, and does not mark the application as submitted unless `--submitted` is explicitly supplied.

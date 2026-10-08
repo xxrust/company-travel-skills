@@ -65,11 +65,13 @@ def amount_to_chinese_upper(amount: Decimal | int | float | str) -> str:
     return result
 
 
-def paper_total(ws, rows: Iterable[int] = range(9, 15)) -> Decimal:
+def paper_total(ws, rows: Iterable[int] | None = None) -> Decimal:
     """Sum numeric expense cells, excluding the finance-owned allowance."""
     total = Decimal("0")
+    legacy = ws.max_column > 10
+    rows = rows if rows is not None else (range(9, 15) if legacy else range(8, 14))
     for row in rows:
-        for column in (8, 9, 11, 13):
+        for column in ((8, 9, 11, 13) if legacy else (4, 5, 7, 9)):
             value = ws.cell(row, column).value
             if isinstance(value, (int, float, Decimal)):
                 total += Decimal(str(value))

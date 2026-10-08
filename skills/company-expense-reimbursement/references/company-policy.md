@@ -12,7 +12,7 @@ Compare values after trimming whitespace and treating obvious OCR punctuation va
 - Multiple lodging invoices in B are written as multiple rows from top to bottom in date order.
 - The travel path should form a closed loop. If it does not, warn the user.
 - Leave all travel allowance amounts and their subtotal blank for finance. Leave the Chinese uppercase grand total blank for finance as well.
-- Print the paper form from the generated HTML in a browser so column proportions do not depend on a spreadsheet application's page scaling.
+- Deliver the XLSX form for WPS. Verify a PDF exported by WPS with portrait A4, one page per form. Do not print without the user's instruction.
 - Do not fill or print signatures; signatures are handwritten.
 
 ## Validation language

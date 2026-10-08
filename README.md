@@ -119,9 +119,9 @@ python .\skills\company-expense-reimbursement\scripts\new_workbook.py `
 ```powershell
 python .\skills\travel-application\scripts\new_application.py `
   --case-dir .\cases\TRIP-2026-001 `
-  --start 2026-09-28 --end 2026-09-30 `
-  --destination "宁波 TXC P4" `
-  --purpose "在TXC P4安装4台点胶设备并进行现场调试"
+  --start 2026-01-10 --end 2026-01-12 `
+  --destination "示例城市 示例项目" `
+  --purpose "执行现场安装与调试"
 ```
 
 打印发票前，先生成带日期和连续页码的打印包：

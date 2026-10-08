@@ -12,7 +12,7 @@ from reimbursement_amount import paper_total
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Fill the paper reimbursement uppercase total.")
+    parser = argparse.ArgumentParser(description="Report non-allowance totals without modifying finance fields.")
     parser.add_argument("workbook", help="Path to a reimbursement .xlsx workbook")
     args = parser.parse_args()
     path = Path(args.workbook).expanduser().resolve()
