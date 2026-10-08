@@ -1,224 +1,230 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>差旅费报销单</title>
   <style>
-    /* ── 色彩令牌 ─────────────────────────────────────────── */
     :root {
-      --ink:      #1a3d6e;
-      --border:   #2a5fa8;
-      --border-d: #6b9fd4;
-      --text:     #0d0d0d;
-      --bg:       #ffffff;
+      --ink:    #1a3d6e;
+      --line:   #2a5fa8;
+      --dash:   #6b9fd4;
+      --fill:   #0a0a0a;
+      --bg:     #ffffff;
     }
-
-    /* ── 基础重置 ─────────────────────────────────────────── */
-    @page { size: 215mm 108mm; margin: 2mm; }
+    @page { size: 215mm 105mm; margin: 2mm; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { background: #d8e4f0; }
-    body { font-family: "Microsoft YaHei", "SimHei", "SimSun", sans-serif; }
+    html, body { background: #cdd8e8; }
+    body { font-family: "Microsoft YaHei", "SimSun", sans-serif; color: var(--ink); }
 
-    /* ── 纸张 ─────────────────────────────────────────────── */
+    /* ── 纸张 ── */
     .paper {
       width: 211mm;
-      margin: 0 auto 6mm;
       background: var(--bg);
-      border: .35mm solid var(--border);
+      border: .4mm solid var(--line);
+      margin: 0 auto 8mm;
       page-break-after: always;
     }
     .paper:last-child { page-break-after: auto; margin-bottom: 0; }
 
-    /* ── 顶部：大标题 + 日期 + 预领款框 ──────────────────── */
+    /* ── 顶部区：标题 + 预领款 ── */
     .top {
       display: grid;
-      grid-template-columns: 1fr 44mm;
-      border-bottom: .35mm solid var(--border);
+      grid-template-columns: 1fr 38mm;
     }
-    .title-block {
+    .title-wrap {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 1mm 0 .8mm;
+      padding: 1.5mm 0 1mm;
+      border-right: .4mm solid var(--line);
     }
-    .title-block h1 {
+    h1 {
       font-size: 13pt; font-weight: 700;
-      letter-spacing: 3mm; color: var(--ink);
+      letter-spacing: 2.5mm; color: var(--ink);
+      border-bottom: .5mm solid var(--ink);
+      padding-bottom: .5mm;
     }
     .form-date {
-      margin-top: .5mm; font-size: 6pt;
-      color: var(--ink); letter-spacing: 2mm;
+      font-size: 5.5pt; letter-spacing: 2mm;
+      color: var(--ink); margin-top: .8mm;
     }
 
-    /* 预领款 / 补款或缴还 */
-    .advance-box {
-      border-left: .35mm solid var(--border);
+    /* 预领款框 — 两格竖排 */
+    .advance {
       display: grid; grid-template-rows: 1fr 1fr;
     }
-    .advance-row {
-      display: grid; grid-template-columns: 18mm 1fr;
-      align-items: center;
-      border-bottom: .35mm solid var(--border);
-      font-size: 5.5pt; color: var(--ink);
-    }
-    .advance-row:last-child { border-bottom: none; }
-    .advance-row .alabel { text-align: center; padding: .4mm; white-space: nowrap; }
-    .advance-row .aval {
-      border-left: .35mm solid var(--border);
-      min-height: 4.5mm; padding: .4mm 1mm;
-      font-size: 6.5pt; color: var(--text);
-      font-family: "Courier New", monospace;
-    }
-
-    /* ── 元信息区 ─────────────────────────────────────────── */
-    .row-dept {
-      display: flex; align-items: center;
-      min-height: 5mm; padding: .4mm 1.5mm;
-      border-bottom: .35mm solid var(--border);
-      font-size: 6pt; color: var(--ink); gap: 1mm;
-    }
-    .row-dept .label { white-space: nowrap; }
-    .row-dept .val {
-      flex: 1; border-bottom: .3mm solid var(--ink);
-      min-height: 3mm; padding: 0 .5mm; color: var(--text); font-size: 6.5pt;
-    }
-
-    .row-identity {
-      display: grid; grid-template-columns: 40mm 40mm 1fr;
-      border-bottom: .35mm solid var(--border); min-height: 5.5mm;
-    }
-    .row-trip {
-      display: grid; grid-template-columns: 1fr 20mm 25mm;
-      border-bottom: .35mm solid var(--border); min-height: 5.5mm;
-    }
-
-    .cell {
+    .adv-row {
       display: grid; grid-template-columns: auto 1fr;
-      align-items: stretch; border-right: .35mm solid var(--border);
+      border-bottom: .4mm solid var(--line);
+      font-size: 5.5pt;
     }
-    .cell:last-child { border-right: none; }
-    .cell .cl {
+    .adv-row:last-child { border-bottom: none; }
+    .adv-label {
+      padding: .5mm 1.5mm; white-space: nowrap;
+      border-right: .4mm solid var(--line);
+      display: flex; align-items: center;
+    }
+    .adv-val {
+      padding: .5mm 1mm; font-size: 6pt;
+      color: var(--fill); font-family: "Courier New", monospace;
+      display: flex; align-items: center;
+    }
+
+    /* ── 部门行 ── */
+    .dept-row {
+      border-top: .4mm solid var(--line);
+      border-bottom: .4mm solid var(--line);
+      padding: .4mm 1.5mm;
+      font-size: 6pt; min-height: 4.5mm;
+      display: flex; align-items: center; gap: .5mm;
+    }
+    .dept-row .val {
+      border-bottom: .3mm dotted var(--line);
+      min-width: 30mm; padding: 0 .5mm;
+      font-size: 6.5pt; color: var(--fill);
+    }
+
+    /* ── 姓名/职别/事由行 ── */
+    .identity-row {
+      border-bottom: .4mm solid var(--line);
+      display: grid; grid-template-columns: 40mm 36mm 1fr;
+      min-height: 5.5mm;
+    }
+    /* ── 出差起止日期行 ── */
+    .trip-row {
+      border-bottom: .4mm solid var(--line);
+      display: grid; grid-template-columns: 1fr 18mm 24mm;
+      min-height: 5mm;
+    }
+
+    /* 通用 label | value 格 */
+    .lv {
+      display: grid; grid-template-columns: auto 1fr;
+      border-right: .4mm solid var(--line);
+    }
+    .lv:last-child { border-right: none; }
+    .lv .l {
       display: flex; align-items: center; justify-content: center;
       padding: .4mm .8mm; white-space: pre; font-size: 5.5pt;
-      color: var(--ink); border-right: .35mm solid var(--border);
-      text-align: center; line-height: 1.3;
+      border-right: .4mm solid var(--line); line-height: 1.3; text-align: center;
     }
-    .cell .cv {
+    .lv .v {
       display: flex; align-items: center;
-      padding: .4mm 1.5mm; font-size: 6.5pt;
-      color: var(--text); min-width: 0; overflow-wrap: anywhere;
+      padding: .4mm 1mm; font-size: 6.5pt; color: var(--fill);
+      min-width: 0; overflow-wrap: anywhere;
     }
 
-    .cell-days {
+    /* 共 N 天 格 */
+    .days-cell {
       display: grid; grid-template-columns: 5mm 1fr 5mm;
-      align-items: center; border-right: .35mm solid var(--border);
+      border-right: .4mm solid var(--line);
     }
-    .cell-days:last-child { border-right: none; }
-    .cell-days .dl, .cell-days .dr {
+    .days-cell:last-child { border-right: none; }
+    .days-cell .d0, .days-cell .d2 {
       display: flex; align-items: center; justify-content: center;
-      font-size: 5.5pt; color: var(--ink); height: 100%;
+      font-size: 5.5pt;
     }
-    .cell-days .dr { border-left: .35mm solid var(--border); }
-    .cell-days .dv {
+    .days-cell .d2 { border-left: .4mm solid var(--line); }
+    .days-cell .d1 {
       display: flex; align-items: center; justify-content: center;
-      font-size: 6.5pt; color: var(--text);
+      font-size: 6.5pt; color: var(--fill);
     }
 
-    /* ── 明细表 ───────────────────────────────────────────── */
-    table.expenses {
-      width: 204mm; table-layout: fixed; border-collapse: collapse;
+    /* ── 明细表 ── */
+    table.exp {
+      width: 211mm; table-layout: fixed; border-collapse: collapse;
     }
-    /* 列宽合计 = 204mm */
-    col.c-date      { width: 14mm; }
-    col.c-location  { width: 42mm; }
-    col.c-vname     { width: 13mm; }
-    col.c-vamt      { width: 15mm; }
-    col.c-hotel     { width: 20mm; }
-    col.c-allowance { width: 14mm; }
-    col.c-local     { width: 20mm; }
-    col.c-mname     { width: 14mm; }
-    col.c-mamt      { width: 18mm; }
-    col.c-note      { width: 34mm; }
+    /* 列宽合计 211mm */
+    col.cd   { width: 14mm; }  /* 起讫日期 */
+    col.cl   { width: 38mm; }  /* 起讫地点 */
+    col.cn   { width: 14mm; }  /* 车船名称 */
+    col.cv   { width: 14mm; }  /* 车船金额 */
+    col.ch   { width: 18mm; }  /* 宿费 */
+    col.ca   { width: 14mm; }  /* 出差补助 */
+    col.co   { width: 18mm; }  /* 市内交通 */
+    col.cmn  { width: 14mm; }  /* 杂费用途 */
+    col.cma  { width: 16mm; }  /* 杂费金额 */
+    col.cno  { width: 51mm; }  /* 附注 */
 
-    .expenses thead th {
-      border: .3mm solid var(--border); padding: .5mm .3mm;
-      font-size: 6pt; font-weight: 700; color: var(--ink);
-      text-align: center; vertical-align: middle;
-      background: var(--bg); line-height: 1.25;
+    .exp thead th {
+      border: .35mm solid var(--line);
+      padding: .5mm .3mm; font-size: 5.8pt; font-weight: 700;
+      text-align: center; vertical-align: middle; line-height: 1.25;
     }
 
-    .expenses tbody td {
-      height: 6mm; font-size: 6.5pt; color: var(--text);
+    .exp tbody td {
+      height: 5.5mm; font-size: 6pt; color: var(--fill);
       padding: .3mm; text-align: center; vertical-align: middle;
-      border-top:    .25mm solid var(--border);
-      border-bottom: .25mm solid var(--border);
-      border-left:   .25mm dashed var(--border-d);
-      border-right:  .25mm dashed var(--border-d);
+      border-top: .3mm solid var(--line);
+      border-bottom: .3mm solid var(--line);
+      border-left: .3mm dashed var(--dash);
+      border-right: .3mm dashed var(--dash);
     }
-    .expenses tbody td:first-child { border-left:  .3mm solid var(--border); }
-    .expenses tbody td:last-child  { border-right: .3mm solid var(--border); }
+    .exp tbody td:first-child { border-left:  .35mm solid var(--line); }
+    .exp tbody td:last-child  { border-right: .35mm solid var(--line); }
 
-    .expenses td.c-date     { font-size: 6pt; line-height: 1.3; }
-    .expenses td.c-location,
-    .expenses td.c-vname,
-    .expenses td.c-mname,
-    .expenses td.c-note     { text-align: left; padding-left: 1mm; }
-    .expenses td.c-vamt,
-    .expenses td.c-hotel,
-    .expenses td.c-local,
-    .expenses td.c-mamt     {
+    /* 最后一个数据行右端显示 ¥： */
+    .exp tbody tr:last-child td.cno {
+      position: relative;
+    }
+    .exp tbody tr:last-child td.cno::after {
+      content: "¥：";
+      position: absolute; right: 3mm; top: 50%;
+      transform: translateY(-50%);
+      font-size: 7.5pt; font-weight: 700; color: var(--ink);
+    }
+
+    td.cl, td.cn, td.cmn, td.cno { text-align: left; padding-left: 1mm; }
+    td.cv, td.ch, td.co, td.cma  {
       text-align: right; padding-right: 1mm;
       font-family: "Courier New", monospace;
     }
+    td.cd { font-size: 5.5pt; line-height: 1.3; }
 
-    .expenses tfoot td {
-      height: 5.5mm; font-size: 6.5pt; font-weight: 700; color: var(--ink);
-      border: .3mm solid var(--border); padding: .3mm;
-      text-align: center; vertical-align: middle;
+    /* 合计行 */
+    .exp tfoot td {
+      height: 5.5mm; font-size: 6.5pt; font-weight: 700;
+      border: .35mm solid var(--line);
+      padding: .3mm; text-align: center; vertical-align: middle;
     }
-    .expenses tfoot .total-label { text-align: left; padding-left: 1.5mm; }
-    .expenses tfoot td.c-vamt,
-    .expenses tfoot td.c-hotel,
-    .expenses tfoot td.c-local,
-    .expenses tfoot td.c-mamt {
+    .exp tfoot .tlabel { text-align: left; padding-left: 2mm; }
+    .exp tfoot td.cv, .exp tfoot td.ch,
+    .exp tfoot td.co, .exp tfoot td.cma {
       text-align: right; padding-right: 1mm;
-      font-family: "Courier New", monospace; color: var(--text);
+      font-family: "Courier New", monospace; color: var(--fill);
     }
 
-    /* ── 大写金额行（含 ¥：） ────────────────────────────── */
-    .row-uppercase {
-      display: grid; grid-template-columns: 36mm 1fr 16mm;
-      min-height: 6mm; border-bottom: .35mm solid var(--border); font-size: 6.5pt;
+    /* ── 合计金额大写行 ── */
+    .uc-row {
+      border-bottom: .35mm solid var(--line);
+      display: flex; align-items: center;
+      font-size: 6pt; min-height: 5.5mm;
     }
-    .row-uppercase > * {
-      display: flex; align-items: center; padding: .5mm 1.5mm;
-      border-right: .35mm solid var(--border); color: var(--ink);
+    .uc-label {
+      padding: .4mm 1.5mm; white-space: nowrap;
+      border-right: .35mm solid var(--line);
     }
-    .row-uppercase > :last-child {
-      border-right: none; font-size: 8pt; font-weight: 700;
+    .uc-val {
+      flex: 1; padding: .4mm 1mm; font-size: 6.5pt; color: var(--fill);
     }
-    .row-uppercase .uc-val { color: var(--text); }
 
-    /* ── 签名行 ───────────────────────────────────────────── */
-    .row-signatures {
+    /* ── 签名行 ── */
+    .sig-row {
       display: grid; grid-template-columns: 1fr 1fr 1fr;
-      min-height: 6mm; font-size: 6.5pt; color: var(--ink);
+      min-height: 5.5mm; font-size: 6pt;
     }
-    .row-signatures div {
-      display: flex; align-items: center; padding: 1mm 1.5mm;
+    .sig-row div {
+      display: flex; align-items: center; padding: .8mm 1.5mm;
     }
 
-    /* ── 屏幕预览 ─────────────────────────────────────────── */
     @media screen {
-      body { padding: 8mm 0; }
-      .paper { box-shadow: 0 1mm 4mm #0003; }
+      body { padding: 6mm 0; }
+      .paper { box-shadow: 0 1mm 5mm #0003; }
     }
-
-    /* ── 打印 ─────────────────────────────────────────────── */
     @media print {
       html, body { background: white; }
       body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-      .paper { margin: 0; box-shadow: none; border: none; }
+      .paper { margin: 0; box-shadow: none; }
     }
   </style>
 </head>
@@ -226,3 +232,5 @@
 $pages
 </body>
 </html>
+
+
