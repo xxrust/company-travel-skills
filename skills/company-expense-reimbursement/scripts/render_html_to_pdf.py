@@ -28,9 +28,8 @@ def html_to_pdf(html_path: Path, output: Path, *, margins_mm: int = 5) -> dict[s
         page.goto(html_path.as_uri(), wait_until="networkidle")
         page.pdf(
             path=str(output),
-            format="A4",
             print_background=True,
-            margin={"top": margin, "bottom": margin, "left": margin, "right": margin},
+            prefer_css_page_size=True,
         )
         browser.close()
 
