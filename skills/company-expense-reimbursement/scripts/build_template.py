@@ -145,6 +145,19 @@ def build_reimbursement_page(ws, user: Mapping[str, str], company: Mapping[str, 
         ws[addr].font = body_font
         ws[addr].alignment = left
 
+    # 车船费名称栏只允许“车票/机票/船票”三选一：车次、航班号、路线与席别
+    # 只写在“发票明细”，不进入纸面报销单。
+    fare_name = DataValidation(
+        type="list",
+        formula1='"车票,机票,船票"',
+        allow_blank=True,
+        showErrorMessage=True,
+        errorTitle="车船费名称",
+        error="车船费名称只能填：车票、机票、船票。车次/航班/席别请写在“发票明细”。",
+    )
+    ws.add_data_validation(fare_name)
+    fare_name.add("C8:C13")
+
     ws.freeze_panes = "A8"
     ws.page_setup.orientation = "portrait"
     ws.page_setup.paperSize = ws.PAPERSIZE_A4

@@ -7,6 +7,7 @@ Compare values after trimming whitespace and treating obvious OCR punctuation va
 ## Rules supplied by the user
 
 - Transportation is the dominant expense category; support taxi, air ticket/itinerary, and lodging documents.
+- The paper form's 车船费 name field accepts only `车票`, `机票`, or `船票`. Never write a train number, flight number, route, seat class, or "公司车自驾" there; those details belong in the 发票明细 sheet and the validation report.
 - A lodging document must show both check-in and check-out dates.
 - If A→B occurs on a travel date and lodging is in B for consecutive days, lodging belongs on the A→B line.
 - Multiple lodging invoices in B are written as multiple rows from top to bottom in date order.
